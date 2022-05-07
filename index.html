@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  
+   
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+  <style>
+  #app{
+    background-size: cover;
+      background-image: url(img/alpha.jpg);      
+  }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <v-main>   
+     
+       <!-- Botón CREAR -->  
+       <v-flex class="text-center align-items:text-center">
+        <v-btn rounded  @click="formNuevo()">
+         crear cfdi
+        </v-btn>           
+       </v-flex>              
+         
+        <v-card class="mx-auto mt-5" color="transparent" max-width="1280" elevation="8">                    
+      
+
+        </v-card>        
+      <!-- Componente de Diálogo para CREAR y EDITAR -->
+      <v-dialog v-model="dialog" max-width="700">        
+        <v-card>
+          <v-card-title class="blue darken-2 white--text">Creación</v-card-title>    
+          <v-card-text>            
+            <v-form>             
+              <v-container>
+                <v-row>
+                  <input v-model="articulo.recibo" hidden></input>
+
+                  <label for="">DOMICILIO FISCAL</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.codigoPostal" label="codigo Postal" type="text" solo required></v-text-field>
+                  </v-col>
+
+                  <label for="">RFC</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.rfc" label="RFC" type="text" solo required></v-text-field>
+                  </v-col>
+
+                  <label for="">NOMBRE</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.name" label="Nombre" type="text" solo required></v-text-field>
+                  </v-col>
+
+                  <label for="">FOLIO</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.recibo" label="recibo" type="text" solo required></v-text-field>
+                  </v-col>
+
+                  <label for="">CORREO ELECTRONICO</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.email" label="Correo electronico" type="email" solo required></v-text-field>
+                  </v-col>
+
+                  <label for="">FORMA DE PAGO</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.pago" label="FORMA DE PAGO" type="text" solo required></v-text-field>
+                  </v-col>
+
+                  <label for="">USO</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.uso" label="USO" type="text" solo required></v-text-field>
+                  </v-col>
+
+                  <label for="">TIPO DE CFDI</label>
+                  <v-col cols="12" md="12">
+                    <v-text-field v-model="articulo.tipoCFDI " label="TIPO DE CFDI" type="text" solo required></v-text-field>
+                  </v-col>
+
+
+
+                </v-row>
+              </v-container>            
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn @click="dialog=false" color="blue-grey" dark>Cancelar</v-btn>
+            <v-btn @click="guardar()" type="submit" color="blue darken-2" dark>Guardar</v-btn>
+          </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.5.7/vuetify.min.js" integrity="sha512-BPXn+V2iK/Zu6fOm3WiAdC1pv9uneSxCCFsJHg8Cs3PEq6BGRpWgXL+EkVylCnl8FpJNNNqvY+yTMQRi4JIfZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+
+    let url = 'http://192.168.20.57:8090/alpha/facturacion';
+
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+       data() {
+        return {            
+            articulos: [],
+            dialog: false,
+            operacion: '',            
+            articulo:{
+                
+                codigoPostal:'',
+                rfc:'',
+                name:'',
+                recibo:'',  
+                email:'',
+                pago:'',
+                uso:'',
+                tipoCFDI :'',
+                //rigimen:'',
+            }          
+        }
+       },
+       created(){               
+            this.mostrar()
+       },  
+       methods:{          
+           
+            mostrar:function(){
+              axios.post(url)
+              .then(response =>{
+                this.articulos = response.data;                   
+              })
+            },
+            crear:function(){
+                let parametros = {
+                  codigoPostal:this.articulo.codigoPostal,
+                  rfc:this.articulo.rfc,
+                  name:this.articulo.name,
+                  recibo:this.articulo.recibo,
+                  email:this.articulo.email, 
+                  pago:this.articulo.pago,
+                  uso:this.articulo.uso,
+                  tipoCFDI:this.articulo.tipoCFDI,
+                  //rigimen:this.articulo.rigimen,
+                };                
+                axios.post(url, parametros)
+                .then(response =>{
+                  //this.mostrar();
+                  console.log("llegue");
+                });     
+                this.articulo.codigoPostal="";
+                this.articulo.rfc="";
+                this.articulo.name="";
+                this.articulo.recibo="";
+                this.articulo.email="";
+                this.articulo.pago="";
+                this.articulo.uso="";
+                this.articulo.tipoCFDI="";
+                //this.articulo.rigimen="";
+            },                        
+            editar: function(){
+            let parametros = {
+                  codigoPostal:this.articulo.codigoPostal,
+                  rfc:this.articulo.rfc,
+                  name:this.articulo.name,
+                  recibo:this.articulo.recibo,
+                  email:this.articulo.email, 
+                  pago:this.articulo.pago,
+                  uso:this.articulo.uso,
+                  tipoCFDI:this.articulo.tipoCFDI,
+                  //rigimen:this.articulo.rigimen,
+            };                            
+            //console.log(parametros);                   
+                 axios.put(url+this.articulo.recibo, parametros)                            
+                  .then(response => {                                
+                     this.mostrar();
+                  })                
+                  .catch(error => {
+                      console.log(error);            
+                  });
+            },
+            borrar:function(recibo){
+             Swal.fire({
+                title: '¿Confirma eliminar el registro?',   
+                confirmButtonText: `Confirmar`,                  
+                showCancelButton: true,                          
+              }).then((result) => {                
+                if (result.isConfirmed) {      
+                      //procedimiento borrar
+                      axios.delete(url+recibo)
+                      .then(response =>{           
+                          this.mostrar();
+                       });      
+                      Swal.fire('¡Eliminado!', '', 'success')
+                } else if (result.isDenied) {                  
+                }
+              });              
+            },
+
+            //Botones y formularios
+            guardar:function(){
+              if(this.operacion=='crear'){
+                this.crear();                
+              }
+              if(this.operacion=='editar'){ 
+                this.editar();                           
+              }
+              this.dialog=false;                        
+            }, 
+            formNuevo:function () {
+              this.dialog=true;
+              this.operacion='crear';
+              this.articulo.codigoPostal='';
+              this.articulo.rfc='';
+              this.articulo.name='';
+              this.articulo.recibo='';
+              this.articulo.email='';
+              this.articulo.pago='';
+              this.articulo.uso='';
+              this.articulo.tipoCFDI='';
+              //this.articulo.rigimen='';
+            },
+            formEditar:function(codigoPostal,rfc,name,recibo,email,pago,uso,cfditype){
+              //capturamos los datos del registro seleccionado y los mostramos en el formulario
+              this.articulo.codigoPostal = codigoPostal;
+              this.articulo.rfc = rfc;                            
+              this.articulo.name = name;
+              this.articulo.recibo = recibo;    
+              this.articulo.email = email;   
+              this.articulo.pago = pago; 
+              this.articulo.uso = uso;        
+              this.articulo.tipoCFDI = tipoCFDI;  
+              //this.articulo.rigimen = rigimen;              
+              this.dialog=true;                            
+              this.operacion='editar';
+            }
+       }      
+    });
+  </script>
+</body>
+</html>
